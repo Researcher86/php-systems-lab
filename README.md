@@ -1,6 +1,6 @@
 # PHP Systems Lab
 
-> A collection of small educational PHP projects for exploring concurrency, processes, event-driven architecture, networking, and backend infrastructure.
+> A collection of small educational PHP projects for exploring memory, operating systems, concurrency, processes, event-driven architecture, networking, and backend infrastructure.
 
 **PHP Systems Lab** is a collection of educational projects built to understand how backend and systems programming concepts work internally.
 
@@ -84,6 +84,8 @@ For example:
 ```text
 How does concurrency work?
 
+How does PHP use memory and interact with the operating system?
+
 How do worker processes work?
 
 How does a job queue work?
@@ -116,22 +118,31 @@ Complex enough to demonstrate real engineering problems
 # 🗺️ The Ecosystem
 
 ```text
-                              🧠
-                      php-concurrency
-                  Concurrency Fundamentals
-                              │
-              ┌───────────────┼────────────────┐
-              │               │                │
-              ▼               ▼                ▼
-             ⚙️              🟥               🔬
-      php-worker-pool    php-mini-redis    Experiments
-       Process Runtime   Event-Driven Server
-              │               │
-              │               │
-              ▼               ▼
-             📬              🌐
-       php-job-queue   php-mini-http-server
-     Background Jobs      HTTP Server
+                         🧠
+                  PHP Systems Lab
+             Systems Programming in PHP
+                         │
+          ┌──────────────┴──────────────┐
+          │                             │
+          ▼                             ▼
+          🧠                            🧠
+ php-concurrency                 php-memory-lab
+ Concurrency Fundamentals       Memory & OS Fundamentals
+          │                             │
+          └──────────────┬──────────────┘
+                         │
+          ┌──────────────┼────────────────┐
+          │              │                │
+          ▼              ▼                ▼
+          ⚙️             🟥               🌐
+ php-worker-pool   php-mini-redis   php-mini-http-server
+ Process Runtime   Event-Driven     HTTP Server
+                   Server
+          │
+          ▼
+          📬
+  php-job-queue
+ Background Jobs
 ```
 
 The projects explore different layers of backend and systems programming.
@@ -191,7 +202,23 @@ This repository provides many of the fundamental concepts used by the rest of th
 
 ---
 
-# ⚙️ PHP Worker Pool
+## 🧠 PHP Memory Lab
+
+### [`php-memory-lab`](https://github.com/Researcher86/php-memory-lab)
+
+> Exploring memory and operating-system fundamentals in PHP.
+
+This project complements `php-concurrency` by focusing on the runtime and operating-system concepts that influence how PHP programs use memory.
+
+### Core Question
+
+> **How does PHP use memory and interact with the operating system?**
+
+It provides a foundation for investigating memory behavior alongside the process, IPC, and event-loop concepts explored elsewhere in the ecosystem.
+
+---
+
+## ⚙️ PHP Worker Pool
 
 ### [`php-worker-pool`](https://github.com/Researcher86/php-worker-pool)
 
@@ -253,7 +280,7 @@ START → IDLE ⇄ BUSY             │
 
 ---
 
-# 📬 PHP Job Queue
+## 📬 PHP Job Queue
 
 ### [`php-job-queue`](https://github.com/Researcher86/php-job-queue)
 
@@ -331,7 +358,7 @@ How do we manage jobs?
 
 ---
 
-# 🟥 PHP Mini Redis
+## 🟥 PHP Mini Redis
 
 ### [`php-mini-redis`](https://github.com/Researcher86/php-mini-redis)
 
@@ -406,7 +433,7 @@ Event Loop
 
 ---
 
-# 🌐 PHP Mini HTTP Server
+## 🌐 PHP Mini HTTP Server
 
 ### [`php-mini-http-server`](https://github.com/Researcher86/php-mini-http-server)
 
@@ -565,31 +592,25 @@ The projects are not isolated.
 They build on related concepts.
 
 ```text
-php-concurrency
-       │
-       │ Processes
-       │ IPC
-       │ Event Loops
-       │ Fibers
-       │
-       ├─────────────────────┐
-       │                     │
-       ▼                     ▼
-php-worker-pool       php-mini-redis
-       │                     │
-       │ Workers             │ TCP
-       │ Lifecycle           │ Event Loop
-       │ IPC                 │ Connections
-       │                     │
-       ▼                     ▼
-php-job-queue      php-mini-http-server
-       │                     │
-       │ Background Jobs     │ HTTP
-       │ Retries             │ Routing
-       │ ACK                 │ Middleware
-       │                     │
-       ▼                     ▼
-Application Infrastructure   Server Runtime
+php-concurrency                 php-memory-lab
+       │                                 │
+       │ Concurrency                     │ Memory & OS
+       │ Processes                       │ Fundamentals
+       │ IPC                             │
+       │ Event Loops                     │
+       │ Fibers                          │
+       └───────────────┬─────────────────┘
+                       │
+       ┌───────────────┴─────────────────┐
+       │                                 │
+       ▼                                 ▼
+php-worker-pool                    php-mini-redis
+       │                                 │
+       ▼                                 ▼
+php-job-queue                  php-mini-http-server
+       │                                 │
+       ▼                                 ▼
+Application Infrastructure          Server Runtime
 ```
 
 ---
@@ -600,7 +621,15 @@ The projects can be explored independently.
 
 However, the recommended order is:
 
-## Level 1 — Concurrency Fundamentals
+## Level 1 — Memory & OS Fundamentals
+
+### 🧠 `php-memory-lab`
+
+Start here to explore how PHP memory behavior relates to operating-system fundamentals.
+
+---
+
+## Level 2 — Concurrency Fundamentals
 
 ### 🧠 `php-concurrency`
 
@@ -632,7 +661,7 @@ Fibers
 
 ---
 
-## Level 2 — Process Runtime
+## Level 3 — Process Runtime
 
 ### ⚙️ `php-worker-pool`
 
@@ -664,7 +693,7 @@ Graceful Shutdown
 
 ---
 
-## Level 3 — Background Processing
+## Level 4 — Background Processing
 
 ### 📬 `php-job-queue`
 
@@ -700,7 +729,7 @@ Retries
 
 ---
 
-## Level 4 — Event-Driven Servers
+## Level 5 — Event-Driven Servers
 
 ### 🟥 `php-mini-redis`
 
@@ -732,7 +761,7 @@ Storage
 
 ---
 
-## Level 5 — HTTP Server Runtime
+## Level 6 — HTTP Server Runtime
 
 ### 🌐 `php-mini-http-server`
 
@@ -816,6 +845,22 @@ What happens when the Master restarts it?
 ↓
 
 What happens during graceful shutdown?
+```
+
+---
+
+## Memory & OS Experiments
+
+```text
+How does memory usage change as a PHP program runs?
+
+↓
+
+What happens to memory when a process is created?
+
+↓
+
+Which behaviors are managed by PHP, and which by the operating system?
 ```
 
 ---
@@ -1038,26 +1083,29 @@ Complex enough to teach something important.
 # 🗺️ The Mental Map
 
 ```text
-                         BACKEND SYSTEMS
-                                │
-          ┌─────────────────────┼─────────────────────┐
-          │                     │                     │
-          ▼                     ▼                     ▼
-     CONCURRENCY            PROCESSES             NETWORKING
-          │                     │                     │
-          ▼                     ▼                     ▼
-  php-concurrency      php-worker-pool       php-mini-redis
-          │                     │                     │
-          │                     ▼                     ▼
-          │                php-job-queue   php-mini-http-server
-          │
-          └───────────────┐
-                          │
-                          ▼
-                   EXPERIMENTS
-                          │
-                          ▼
-                    UNDERSTANDING
+BACKEND SYSTEMS
+│
+├── MEMORY & OS
+│   └── php-memory-lab
+│
+├── CONCURRENCY
+│   └── php-concurrency
+│
+├── PROCESSES
+│   ├── php-worker-pool
+│   └── php-job-queue
+│
+└── NETWORKING
+    ├── php-mini-redis
+    └── php-mini-http-server
+
+All projects
+    │
+    ▼
+Experiments
+    │
+    ▼
+Understanding
 ```
 
 ---
