@@ -135,7 +135,7 @@ Complex enough to demonstrate real engineering problems
           │              │                │
           ▼              ▼                ▼
           ⚙️             🟥               🌐
- php-worker-pool   php-mini-redis   php-mini-http-server
+ php-worker-pool   php-mini-cache   php-mini-http-server
  Process Runtime   Event-Driven     HTTP Server
                    Server
           │
@@ -358,9 +358,9 @@ How do we manage jobs?
 
 ---
 
-## 🟥 PHP Mini Redis
+## 🟥 PHP Mini Cache
 
-### [`php-mini-redis`](https://github.com/Researcher86/php-mini-redis)
+### [`php-mini-cache`](https://github.com/Researcher86/php-mini-cache)
 
 > An educational event-driven in-memory database server.
 
@@ -439,7 +439,7 @@ Event Loop
 
 > An educational event-driven HTTP server written in PHP.
 
-This project builds on many concepts explored in `php-mini-redis`.
+This project builds on many concepts explored in `php-mini-cache`.
 
 The difference is that instead of implementing a database protocol, it explores:
 
@@ -557,7 +557,7 @@ This model explores:
 Used in:
 
 ```text
-php-mini-redis
+php-mini-cache
 
 php-mini-http-server
 ```
@@ -604,7 +604,7 @@ php-concurrency                 php-memory-lab
        ┌───────────────┴─────────────────┐
        │                                 │
        ▼                                 ▼
-php-worker-pool                    php-mini-redis
+php-worker-pool                    php-mini-cache
        │                                 │
        ▼                                 ▼
 php-job-queue                  php-mini-http-server
@@ -731,7 +731,7 @@ Retries
 
 ## Level 5 — Event-Driven Servers
 
-### 🟥 `php-mini-redis`
+### 🟥 `php-mini-cache`
 
 Learn:
 
@@ -1038,7 +1038,7 @@ php-mini-runtime
 ## Event-Driven Networking
 
 ```text
-php-mini-redis
+php-mini-cache
        │
        ▼
 php-mini-http-server
@@ -1096,7 +1096,7 @@ BACKEND SYSTEMS
 │   └── php-job-queue
 │
 └── NETWORKING
-    ├── php-mini-redis
+    ├── php-mini-cache
     └── php-mini-http-server
 
 All projects
