@@ -1,6 +1,6 @@
 # PHP Systems Lab
 
-> A collection of small educational PHP projects for exploring memory, operating systems, concurrency, processes, event-driven architecture, networking, and backend infrastructure.
+> A collection of small educational PHP projects for exploring memory, operating systems, concurrency, processes, event-driven architecture, networking, storage engines, and backend infrastructure.
 
 **PHP Systems Lab** is a collection of educational projects built to understand how backend and systems programming concepts work internally.
 
@@ -93,6 +93,8 @@ How does a job queue work?
 How does an event-driven server work?
 
 How does an HTTP server work?
+
+How does a database engine store data on disk?
 ```
 
 The projects are intentionally designed to be:
@@ -131,12 +133,12 @@ Complex enough to demonstrate real engineering problems
           │                             │
           └──────────────┬──────────────┘
                          │
-          ┌──────────────┼────────────────┐
-          │              │                │
-          ▼              ▼                ▼
-          ⚙️             🟥               🌐
- php-worker-pool   php-mini-cache   php-mini-http-server
- Process Runtime   Event-Driven     HTTP Server
+          ┌──────────────┼────────────────┬──────────────────────┐
+          │              │                │                      │
+          ▼              ▼                ▼                      ▼
+          ⚙️             🟥               🌐                     🗄️
+ php-worker-pool   php-mini-cache   php-mini-http-server  php-mini-database
+ Process Runtime   Event-Driven     HTTP Server           Storage Engine
                    Server
           │
           ▼
@@ -515,6 +517,106 @@ Client
 
 ---
 
+## 🗄️ PHP Mini Database
+
+### [`php-mini-database`](https://github.com/Researcher86/php-mini-database)
+
+> A small, readable relational database written in PHP.
+
+This project explores what happens when data has to survive a restart.
+
+`php-mini-cache` keeps everything in memory:
+
+```text
+Process dies
+
+↓
+
+Data disappears
+```
+
+`php-mini-database` explores the opposite question:
+
+```text
+Process dies
+
+↓
+
+Data survives
+```
+
+Architecture:
+
+```text
+SQL
+    │
+    ▼
+Parser
+    │
+    ▼
+Query Planner
+    │
+    ▼
+Executor
+    │
+    ├── Index
+    │
+    └── Storage Engine
+             │
+             ├── Records
+             │
+             ├── Pages
+             │
+             ├── File Format
+             │
+             └── WAL
+                  │
+                  ▼
+               Recovery
+```
+
+### Core Question
+
+> **How does a database engine work internally?**
+
+### Concepts
+
+* on-disk storage;
+* file formats;
+* records;
+* pages;
+* indexes;
+* SQL parsing;
+* query execution;
+* transactions;
+* WAL;
+* crash recovery;
+* locking;
+* concurrency.
+
+### Important Idea
+
+A cache answers:
+
+> **How do we keep data fast?**
+
+A database answers:
+
+> **How do we keep data safe?**
+
+```text
+php-mini-cache
+
+In-Memory State
+
+
+php-mini-database
+
+Durable State
+```
+
+---
+
 # 🔀 Two Major Concurrency Models
 
 One of the most interesting parts of this ecosystem is that it explores different approaches to concurrency.
@@ -601,16 +703,17 @@ php-concurrency                 php-memory-lab
        │ Fibers                          │
        └───────────────┬─────────────────┘
                        │
-       ┌───────────────┴─────────────────┐
-       │                                 │
-       ▼                                 ▼
-php-worker-pool                    php-mini-cache
-       │                                 │
-       ▼                                 ▼
-php-job-queue                  php-mini-http-server
-       │                                 │
-       ▼                                 ▼
-Application Infrastructure          Server Runtime
+       ┌───────────────┼──────────────────────────────┐
+       │               │                              │
+       ▼               ▼                              ▼
+php-worker-pool   php-mini-cache               php-mini-database
+       │               │                              │
+       ▼               ▼                              ▼
+php-job-queue   php-mini-http-server          Storage & Recovery
+       │               │                              │
+       ▼               ▼                              ▼
+Application        Server Runtime                Durable State
+Infrastructure
 ```
 
 ---
@@ -801,6 +904,50 @@ Responses
 
 ---
 
+## Level 7 — Database Engine
+
+### 🗄️ `php-mini-database`
+
+Learn:
+
+```text
+Files
+
+↓
+
+Pages
+
+↓
+
+Records
+
+↓
+
+Indexes
+
+↓
+
+SQL
+
+↓
+
+Query Execution
+
+↓
+
+Transactions
+
+↓
+
+WAL
+
+↓
+
+Crash Recovery
+```
+
+---
+
 # 🔬 Learn by Experimenting
 
 These projects are designed to be modified.
@@ -917,6 +1064,22 @@ What happens during graceful shutdown?
 
 ---
 
+## Storage & Durability Experiments
+
+```text
+What happens when the process is killed in the middle of a write?
+
+↓
+
+What does WAL replay restore after a crash?
+
+↓
+
+How does an index change the cost of a query?
+```
+
+---
+
 # 🧪 Production-Inspired, Not Production-Ready
 
 These projects are inspired by real backend infrastructure.
@@ -939,6 +1102,12 @@ RabbitMQ
 Nginx
 
 Apache
+
+SQLite
+
+MySQL
+
+PostgreSQL
 ```
 
 However, the goal is not to compete with them.
@@ -1056,6 +1225,30 @@ Mini Proxy Server
 
 ---
 
+## Storage & Persistence
+
+```text
+php-memory-lab
+       │
+       ▼
+php-mini-cache
+       │
+       ▼
+php-mini-database
+```
+
+Possible future experiments:
+
+```text
+Alternative Index Structures
+
+Query Plan Visualization
+
+Replication
+```
+
+---
+
 # 🏗️ The Main Principle
 
 This ecosystem does not try to build:
@@ -1094,6 +1287,9 @@ BACKEND SYSTEMS
 ├── PROCESSES
 │   ├── php-worker-pool
 │   └── php-job-queue
+│
+├── STORAGE
+│   └── php-mini-database
 │
 └── NETWORKING
     ├── php-mini-cache
