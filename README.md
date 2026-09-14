@@ -212,11 +212,69 @@ This repository provides many of the fundamental concepts used by the rest of th
 
 This project complements `php-concurrency` by focusing on the runtime and operating-system concepts that influence how PHP programs use memory.
 
+Every topic becomes the smallest experiment that proves it, the result is measured at both levels that matter, and the number is explained rather than asserted.
+
 ### Core Question
 
 > **How does PHP use memory and interact with the operating system?**
 
-It provides a foundation for investigating memory behavior alongside the process, IPC, and event-loop concepts explored elsewhere in the ecosystem.
+### Concepts
+
+```text
+memory_get_usage() vs RSS
+    │
+    ▼
+/proc: VmRSS, RssAnon, PSS, Private_Dirty
+    │
+    ▼
+zvals, refcounting, packed vs associative arrays
+    │
+    ▼
+fork() and Copy-on-Write
+    │
+    ▼
+Unix sockets, SysV shared memory, semaphores
+    │
+    ▼
+Shared-memory ring buffer
+    │
+    ▼
+mmap: lazy loading, MAP_SHARED vs MAP_PRIVATE
+    │
+    ▼
+FFI and native memory
+```
+
+### The One Distinction
+
+Everything in this project rests on the fact that two honest answers disagree:
+
+```text
+memory_get_usage()          RSS (VmRSS)
+
+engine-managed bytes        resident physical pages
+goes down on unset()        rarely goes back down
+knows about zvals           knows nothing about zvals
+blind to mmap/FFI/shm       counts every touched page
+```
+
+A process can show flat PHP memory while its RSS climbs, and the reverse. So every measurement here records both, always.
+
+### Boundary with `php-concurrency`
+
+The two projects overlap on `fork()`, process lifecycle, IPC, producer-consumer and backpressure, and the overlap is deliberate. What differs is the question:
+
+```text
+php-concurrency      how is work coordinated across processes?
+                     → answers with patterns
+
+php-memory-lab       what does that mechanism cost in pages and copies?
+                     → answers with RssShmem, Pss, Private_Dirty
+```
+
+Which is how `php-memory-lab` reaches a conclusion its sibling never measures: a Unix socket beats shared memory, because the semaphore shared memory needs costs more than the copy it saves.
+
+Read `php-concurrency` to learn the pattern; read `php-memory-lab` to learn what it costs.
 
 ---
 
@@ -1149,6 +1207,61 @@ But they can hide the fundamental architecture.
 PHP Systems Lab focuses on:
 
 > **Understanding the core idea first.**
+
+---
+
+# 🧰 Shared Conventions
+
+The projects are independent repositories, but they are built the same way, so that moving between them costs nothing.
+
+```text
+Docker              nothing is installed on your machine
+Makefile            the same verbs everywhere
+Composer            PSR-4, PHP 8.5, platform extensions declared
+PHPUnit             tests/ next to src/
+PHPStan             level 8 where the code allows it
+PHP-CS-Fixer        one shared .php-cs-fixer.dist.php
+GitHub Actions      test, analyse, format:check on every push
+docs/DECISIONS.md   what was decided, and why
+docs/PHASES.md      how it was built, phase by phase
+```
+
+The verbs:
+
+```bash
+make install         # build the image and install dependencies
+make test            # PHPUnit
+make analyse         # PHPStan
+make format-check    # PHP-CS-Fixer, dry run
+make format          # apply PHP-CS-Fixer
+make shell           # a shell in the container
+```
+
+`php-memory-lab` carries the most complete version of this and is the reference for it - including `tests/DocumentationTest.php`, which checks that every link, path and command in the documentation still resolves.
+
+`php-concurrency` is the deliberate exception: it is a lesson course rather than an engineered project, so each lesson is a directory with a `README.md`, a `diagram.txt` and a runnable `main.php`, with no Composer package around it.
+
+---
+
+# 📦 These Are Not Libraries
+
+None of these projects is published, and none depends on another as a package.
+
+```text
+What travels between them:
+
+   the mechanism        read in one, reimplemented in the next
+   the measurement      a number you can reproduce
+   the conventions      the same Makefile, the same formatter
+
+What does not travel:
+
+   the code             deliberately
+```
+
+So `php-worker-pool` has its own shared-memory telemetry and `php-job-queue` its own queue, even though `php-memory-lab` implements both. That is the point: rebuilding a mechanism is how you learn it, and a shared dependency would remove exactly the work that teaches.
+
+Every project declares `"license": "MIT"` in its `composer.json` and says so in its README. There is no `LICENSE` file, by choice.
 
 ---
 
