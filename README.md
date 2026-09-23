@@ -2,1439 +2,1186 @@
 
 > A collection of small educational PHP projects for exploring memory, operating systems, concurrency, processes, event-driven architecture, networking, storage engines, and backend infrastructure.
 
-**PHP Systems Lab** is a collection of educational projects built to understand how backend and systems programming concepts work internally.
+The goal is not to build production-ready replacements.
 
-The goal is not to build production-ready replacements for existing technologies.
+The goal is to understand **how backend systems actually work** by building simplified versions of their core mechanisms.
 
-The goal is to build small, understandable implementations that can be:
+Every project is designed to be:
 
-* read;
-* run;
-* modified;
-* broken;
-* debugged;
-* experimented with.
+* small enough to understand
+* real enough to experiment with
+* simple enough to modify
+* complex enough to expose real engineering problems
 
 > **Learn backend infrastructure by building executable mental models.**
 
 ---
 
-# 🧠 The Philosophy
+# 🗺️ Architecture
 
-Modern backend infrastructure can be difficult to understand.
-
-Production systems often contain:
+The projects form a progressive systems stack.
 
 ```text
-Thousands of files
-
-↓
-
-Multiple abstraction layers
-
-↓
-
-Plugins
-
-↓
-
-Configuration
-
-↓
-
-Observability
-
-↓
-
-Production concerns
-
-↓
-
-Complex infrastructure
+                         🧪 PHP SYSTEMS LAB
+                                  │
+          ┌───────────────────────┼───────────────────────┐
+          │                       │                       │
+          ▼                       ▼                       ▼
+   🧠 php-memory-lab      ⚡ php-concurrency        🌐 Networking
+          │                       │                       │
+          │               ┌───────┴───────┐               │
+          │               ▼               ▼               ▼
+          │        ⚙️ php-worker-pool  📬 php-job-queue  💾 php-mini-cache
+          │               │               │               │
+          │               └───────┬───────┘               ▼
+          │                       │              🌐 php-mini-http-server
+          │                       │                       │
+          └───────────────┐       │                       │
+                          ▼       ▼                       │
+                 🗄️ php-mini-database     💡 Shared Concepts
+                          │               ▲               │
+                          └───────┬───────┘               │
+                                  ▼                       │
+                       🏗️ php-systems-platform ◄──────────┘
+                                  │
+                                  ▼
+                         🚀 FINAL PLATFORM
 ```
 
-Eventually, the original idea can become difficult to see.
-
-This collection takes a different approach:
+The progression is intentional:
 
 ```text
-Idea
-
-↓
-
-Minimal Architecture
-
-↓
-
-Runnable Implementation
-
-↓
-
-Experiments
-
-↓
-
-Understanding
+Mechanisms
+    ↓
+Components
+    ↓
+Subsystems
+    ↓
+Infrastructure
+    ↓
+Integration
+    ↓
+Complete Platform
 ```
-
-Every project focuses on one fundamental question.
-
-For example:
-
-```text
-How does concurrency work?
-
-How does PHP use memory and interact with the operating system?
-
-How do worker processes work?
-
-How does a job queue work?
-
-How does an event-driven server work?
-
-How does an HTTP server work?
-
-How does a database engine store data on disk?
-```
-
-The projects are intentionally designed to be:
-
-```text
-Small enough to understand
-
-↓
-
-Real enough to experiment with
-
-↓
-
-Simple enough to modify
-
-↓
-
-Complex enough to demonstrate real engineering problems
-```
-
----
-
-# 🗺️ The Ecosystem
-
-```text
-                         🧠
-                  PHP Systems Lab
-             Systems Programming in PHP
-                         │
-          ┌──────────────┴──────────────┐
-          │                             │
-          ▼                             ▼
-          🧠                            🧠
- php-concurrency                 php-memory-lab
- Concurrency Fundamentals       Memory & OS Fundamentals
-          │                             │
-          └──────────────┬──────────────┘
-                         │
-          ┌──────────────┼────────────────┬──────────────────────┐
-          │              │                │                      │
-          ▼              ▼                ▼                      ▼
-          ⚙️             🟥               🌐                     🗄️
- php-worker-pool   php-mini-cache   php-mini-http-server  php-mini-database
- Process Runtime   Event-Driven     HTTP Server           Storage Engine
-                   Server
-          │
-          ▼
-          📬
-  php-job-queue
- Background Jobs
-```
-
-The projects explore different layers of backend and systems programming.
 
 ---
 
 # 📚 Projects
 
-## 🧠 PHP Concurrency
+## 🧠 PHP Memory Lab
 
-### [`php-concurrency`](https://github.com/Researcher86/php-concurrency)
+### `php-memory-lab`
 
-> Exploring the fundamental building blocks of concurrency in PHP.
+Exploring memory and operating-system fundamentals from PHP.
 
-This project explores:
+Topics include:
 
-* processes;
-* `pcntl_fork()`;
-* IPC;
-* process communication;
-* synchronization;
-* concurrency patterns;
-* producer-consumer;
-* event loops;
-* Fibers;
-* asynchronous I/O.
+* virtual memory
+* process memory
+* RSS
+* copy-on-write
+* `fork()`
+* `mmap()`
+* shared memory
+* memory mappings
+* process isolation
+* allocation behavior
+* FFI and native memory
+* interaction between PHP and the operating system
 
-### Core Question
+### Core questions
 
-> **How does concurrency work?**
+* What actually happens to memory after `fork()`?
+* How does copy-on-write work?
+* Why does RSS change?
+* What memory is shared between processes?
+* What does `mmap()` provide?
+* How can PHP interact with native memory?
 
-### Concepts
-
-```text
-Processes
-    │
-    ▼
-Fork
-    │
-    ▼
-IPC
-    │
-    ▼
-Synchronization
-    │
-    ▼
-Concurrency Patterns
-    │
-    ▼
-Event Loops
-    │
-    ▼
-Fibers
-```
-
-This repository provides many of the fundamental concepts used by the rest of the ecosystem.
+This project provides the low-level foundation for the rest of the lab.
 
 ---
 
-## 🧠 PHP Memory Lab
+## ⚡ PHP Concurrency
 
-### [`php-memory-lab`](https://github.com/Researcher86/php-memory-lab)
+### `php-concurrency`
 
-> Exploring memory and operating-system fundamentals in PHP.
+Exploring the fundamental building blocks of concurrency in PHP.
 
-This project complements `php-concurrency` by focusing on the runtime and operating-system concepts that influence how PHP programs use memory.
+Topics include:
 
-Every topic becomes the smallest experiment that proves it, the result is measured at both levels that matter, and the number is explained rather than asserted.
+* processes
+* `pcntl_fork()`
+* IPC
+* pipes
+* Unix sockets
+* `socket_pair()`
+* worker processes
+* process supervision
+* event loops
+* Fibers
+* asynchronous programming
+* Amp / Revolt
+* ReactPHP
+* concurrency patterns
+* at-least-once execution
+* idempotency
 
-### Core Question
+The project deliberately contains small independent experiments.
 
-> **How does PHP use memory and interact with the operating system?**
+Each experiment should be easy to run, inspect, modify, and break.
 
-### Concepts
+### Core questions
 
-```text
-memory_get_usage() vs RSS
-    │
-    ▼
-/proc: VmRSS, RssAnon, PSS, Private_Dirty
-    │
-    ▼
-zvals, refcounting, packed vs associative arrays
-    │
-    ▼
-fork() and Copy-on-Write
-    │
-    ▼
-Unix sockets, SysV shared memory, semaphores
-    │
-    ▼
-Shared-memory ring buffer
-    │
-    ▼
-mmap: lazy loading, MAP_SHARED vs MAP_PRIVATE
-    │
-    ▼
-FFI and native memory
-```
-
-### The One Distinction
-
-Everything in this project rests on the fact that two honest answers disagree:
-
-```text
-memory_get_usage()          RSS (VmRSS)
-
-engine-managed bytes        resident physical pages
-goes down on unset()        rarely goes back down
-knows about zvals           knows nothing about zvals
-blind to mmap/FFI/shm       counts every touched page
-```
-
-A process can show flat PHP memory while its RSS climbs, and the reverse. So every measurement here records both, always.
-
-### Boundary with `php-concurrency`
-
-The two projects overlap on `fork()`, process lifecycle, IPC, producer-consumer and backpressure, and the overlap is deliberate. What differs is the question:
-
-```text
-php-concurrency      how is work coordinated across processes?
-                     → answers with patterns
-
-php-memory-lab       what does that mechanism cost in pages and copies?
-                     → answers with RssShmem, Pss, Private_Dirty
-```
-
-Which is how `php-memory-lab` reaches a conclusion its sibling never measures: a Unix socket beats shared memory, because the semaphore shared memory needs costs more than the copy it saves.
-
-Read `php-concurrency` to learn the pattern; read `php-memory-lab` to learn what it costs.
+* What is concurrency?
+* How is concurrency different from parallelism?
+* How can PHP processes communicate?
+* How do event loops work?
+* What problem do Fibers solve?
+* How do asynchronous runtimes avoid blocking?
+* How can multiple operations execute concurrently?
 
 ---
 
 ## ⚙️ PHP Worker Pool
 
-### [`php-worker-pool`](https://github.com/Researcher86/php-worker-pool)
+### `php-worker-pool`
 
-> An educational implementation of a persistent multi-process Worker Pool.
+An educational implementation of a persistent multi-process worker pool.
 
-This project explores how a master process manages persistent worker processes.
+The project explores how a pool of long-lived PHP processes can execute work concurrently.
 
-Architecture:
+Topics include:
 
-```text
-Clients
-    │
-    ▼
-Master Process
-    │
-    ├── Request Queue
-    │
-    ├── Dispatcher
-    │
-    └── Worker Supervisor
-             │
-             ▼
-       Worker Processes
-```
+* master/worker architecture
+* worker lifecycle
+* process supervision
+* IPC
+* Unix sockets
+* `stream_select()`
+* request dispatching
+* worker states
+* graceful shutdown
+* draining
+* timeouts
+* backpressure
+* failure handling
 
-### Core Question
-
-> **How do persistent worker processes work?**
-
-### Concepts
-
-* master process;
-* worker processes;
-* IPC;
-* Unix Domain Sockets;
-* request dispatching;
-* worker lifecycle;
-* worker recycling;
-* supervision;
-* graceful shutdown.
-
-### Worker Lifecycle
+### Worker lifecycle
 
 ```text
-                ┌───────────────┐
-                │               │
-                ▼               │
-START → IDLE ⇄ BUSY             │
-                │               │
-                ▼               │
-             DRAINING           │
-                │               │
-                ▼               │
-             STOPPING           │
-                │               │
-                ▼               │
-               DEAD ────────────┘
+STARTING
+    ↓
+IDLE
+    ↓
+BUSY
+    ↓
+DRAINING
+    ↓
+STOPPING
+    ↓
+DEAD
 ```
+
+The pool also explores transitions between:
+
+```text
+IDLE ⇄ BUSY
+```
+
+### Core questions
+
+* How does a master process communicate with workers?
+* How should workers be supervised?
+* What happens when a worker is shutting down?
+* How can a pool drain gracefully?
+* How should request and execution timeouts differ?
+* How can a pool avoid losing work?
+
+The project is intentionally educational rather than a production process manager.
 
 ---
 
 ## 📬 PHP Job Queue
 
-### [`php-job-queue`](https://github.com/Researcher86/php-job-queue)
+### `php-job-queue`
 
-> An educational implementation of a background job processing system.
+An educational implementation of a reliable background job processing system.
 
-This project explores how background work can be represented, stored, processed and retried.
+Topics include:
 
-Architecture:
+* job producers
+* workers
+* queues
+* reservations
+* acknowledgements
+* retries
+* failure handling
+* visibility timeouts
+* idempotency
+* at-least-once delivery
+* dead-letter handling
+* worker lifecycle
+* graceful shutdown
 
-```text
-Producer
-    │
-    ▼
-Job
-    │
-    ▼
-Queue
-    │
-    ▼
-Reservation
-    │
-    ▼
-Worker
-    │
-    ▼
-Processing
-    │
-    ├── ACK
-    │
-    ├── Retry
-    │
-    └── Failed
-```
+### Core questions
 
-### Core Question
+* What does "reliable delivery" actually mean?
+* What happens when a worker crashes?
+* When should a job become visible again?
+* Why is at-least-once delivery common?
+* Why must jobs be idempotent?
+* What happens between receiving and acknowledging a job?
 
-> **How does reliable background processing work?**
-
-### Concepts
-
-* jobs;
-* queues;
-* producers;
-* consumers;
-* workers;
-* reservation;
-* acknowledgements;
-* retries;
-* retry backoff;
-* delayed jobs;
-* visibility timeout;
-* failed jobs;
-* idempotency.
-
-### Important Idea
-
-A Worker Pool manages:
-
-> **Workers**
-
-A Job Queue manages:
-
-> **Work**
-
-```text
-Worker Pool
-
-How do we manage workers?
-
-
-Job Queue
-
-How do we manage jobs?
-```
+The project connects the process/concurrency concepts with real backend infrastructure patterns.
 
 ---
 
-## 🟥 PHP Mini Cache
+## 💾 PHP Mini Cache
 
-### [`php-mini-cache`](https://github.com/Researcher86/php-mini-cache)
+### `php-mini-cache`
 
-> An educational event-driven in-memory database server.
+An educational event-driven in-memory cache/database server.
 
-This project explores a completely different concurrency model from the Worker Pool.
+The project explores the architecture behind systems such as Redis without trying to reproduce Redis itself.
 
-Instead of:
+Topics include:
 
-```text
-Many Processes
-```
+* TCP networking
+* sockets
+* event loops
+* non-blocking I/O
+* command parsing
+* request processing
+* response buffering
+* pipelining
+* TTL
+* expiration
+* pub/sub
+* backpressure
+* batching
+* event-loop fairness
 
-it explores:
+### Core questions
 
-```text
-One Process
+* How does an event-driven server process thousands of connections?
+* How does non-blocking I/O work?
+* How should an event loop schedule work?
+* What happens when clients send large pipelines?
+* How should responses be buffered?
+* How can TTL expiration be implemented?
+* What happens when one client becomes too expensive?
 
-+
-
-Event Loop
-
-+
-
-Many Connections
-```
-
-Architecture:
-
-```text
-Clients
-    │
-    ▼
-TCP Server
-    │
-    ▼
-Event Loop
-    │
-    ├── Read Events
-    ├── Write Events
-    └── Timers
-            │
-            ▼
-      Protocol Parser
-            │
-            ▼
-    Command Dispatcher
-            │
-            ▼
-      Command Handler
-            │
-            ▼
-     In-Memory Storage
-```
-
-### Core Question
-
-> **How does an event-driven server work?**
-
-### Concepts
-
-* TCP servers;
-* client connections;
-* event loops;
-* non-blocking I/O;
-* buffers;
-* protocol parsing;
-* command dispatching;
-* in-memory storage;
-* TTL;
-* Pub/Sub.
+The goal is to understand the mechanics behind event-driven network servers.
 
 ---
 
 ## 🌐 PHP Mini HTTP Server
 
-### [`php-mini-http-server`](https://github.com/Researcher86/php-mini-http-server)
+### `php-mini-http-server`
 
-> An educational event-driven HTTP server written in PHP.
+An educational event-driven HTTP server written in PHP.
 
-This project builds on many concepts explored in `php-mini-cache`.
+Topics include:
 
-The difference is that instead of implementing a database protocol, it explores:
+* TCP connections
+* HTTP parsing
+* request lifecycle
+* routing
+* middleware
+* keep-alive
+* HTTP pipelining
+* response generation
+* connection management
+* timeouts
+* backpressure
+* non-blocking sockets
+* event loops
 
-> **HTTP.**
+### Core questions
 
-Architecture:
+* How does an HTTP server actually work?
+* How is an HTTP request parsed?
+* How does keep-alive work?
+* What happens when several requests arrive on one connection?
+* How does a server manage thousands of sockets?
+* Where should timeouts be enforced?
+* What happens when a client is slower than the server?
 
-```text
-Clients
-    │
-    ▼
-TCP Server
-    │
-    ▼
-Event Loop
-    │
-    ▼
-Connection
-    │
-    ▼
-Read Buffer
-    │
-    ▼
-HTTP Parser
-    │
-    ▼
-HttpRequest
-    │
-    ▼
-Router
-    │
-    ▼
-Middleware
-    │
-    ▼
-Request Handler
-    │
-    ▼
-HttpResponse
-    │
-    ▼
-HTTP Encoder
-    │
-    ▼
-Write Buffer
-    │
-    ▼
-Client
-```
-
-### Core Question
-
-> **How does an HTTP server work internally?**
-
-### Concepts
-
-* TCP;
-* event loops;
-* HTTP parsing;
-* partial reads;
-* partial writes;
-* request buffering;
-* response buffering;
-* routing;
-* route parameters;
-* middleware;
-* request handlers;
-* keep-alive;
-* HTTP pipelining;
-* timeouts;
-* backpressure;
-* graceful shutdown.
+This project builds the networking layer that sits between low-level event-driven I/O and application-level HTTP processing.
 
 ---
 
 ## 🗄️ PHP Mini Database
 
-### [`php-mini-database`](https://github.com/Researcher86/php-mini-database)
+### `php-mini-database`
 
-> A small, readable relational database written in PHP.
+A small, readable relational database written in PHP.
 
-This project explores what happens when data has to survive a restart.
+The project explores database internals from the ground up.
 
-`php-mini-cache` keeps everything in memory:
+Topics include:
 
-```text
-Process dies
+* pages
+* records
+* storage
+* tables
+* schemas
+* indexes
+* B-trees
+* SQL parsing
+* query execution
+* transactions
+* WAL
+* crash recovery
+* locking
+* durability
+* client/server architecture
+* authentication
 
-↓
-
-Data disappears
-```
-
-`php-mini-database` explores the opposite question:
-
-```text
-Process dies
-
-↓
-
-Data survives
-```
-
-Architecture:
+### Database layers
 
 ```text
 SQL
-    │
-    ▼
+ ↓
 Parser
-    │
-    ▼
-Query Planner
-    │
-    ▼
-Executor
-    │
-    ├── Index
-    │
-    └── Storage Engine
-             │
-             ├── Records
-             │
-             ├── Pages
-             │
-             ├── File Format
-             │
-             └── WAL
-                  │
-                  ▼
-               Recovery
+ ↓
+Query Planner / Executor
+ ↓
+Transactions
+ ↓
+Storage Engine
+ ↓
+Pages / Records
+ ↓
+Disk
 ```
 
-### Core Question
+### Core questions
 
-> **How does a database engine work internally?**
+* How are database records stored?
+* Why are indexes needed?
+* How does a B-tree work?
+* How does SQL become executable operations?
+* What does a transaction actually provide?
+* Why does a database need a WAL?
+* How can a database recover after a crash?
+* How do durability and atomicity interact?
 
-### Concepts
+The project is intentionally small enough to understand while still exposing the major architectural ideas behind relational databases.
 
-* on-disk storage;
-* file formats;
-* records;
-* pages;
-* indexes;
-* SQL parsing;
-* query execution;
-* transactions;
-* WAL;
-* crash recovery;
-* locking;
-* concurrency.
+---
 
-### Important Idea
+## 🏗️ PHP Systems Platform
 
-A cache answers:
+### `php-systems-platform`
 
-> **How do we keep data fast?**
+The final integration layer of PHP Systems Lab.
 
-A database answers:
+Instead of implementing another isolated system, this project brings the mechanisms and components from the previous projects together into one backend platform.
 
-> **How do we keep data safe?**
+The platform is where the individual experiments become a complete system.
+
+Potential integrated components include:
+
+* HTTP server
+* application runtime
+* worker pool
+* job queue
+* cache
+* database
+* background workers
+* IPC
+* event-driven networking
+* observability
+* configuration
+* graceful shutdown
+* failure handling
+
+### Architectural goal
 
 ```text
-php-mini-cache
-
-In-Memory State
-
-
-php-mini-database
-
-Durable State
+                    🌐 HTTP
+                      │
+                      ▼
+              🏗️ Application
+                 Runtime
+                      │
+          ┌───────────┼───────────┐
+          │           │           │
+          ▼           ▼           ▼
+       💾 Cache     🗄️ DB      📬 Jobs
+          │           │           │
+          │           │           ▼
+          │           │      ⚙️ Workers
+          │           │           │
+          └───────────┼───────────┘
+                      │
+                      ▼
+                🧠 System Runtime
 ```
+
+### Core questions
+
+* How do the individual systems interact?
+* Where should process boundaries exist?
+* When should work be synchronous or asynchronous?
+* How should failures propagate?
+* How should backpressure move through the system?
+* How should shutdown work across multiple components?
+* How do storage, networking, workers, and queues form one platform?
+
+This is the final step of the lab:
+
+> **From understanding individual mechanisms to understanding a complete backend system.**
 
 ---
 
 # 🔀 Two Major Concurrency Models
 
-One of the most interesting parts of this ecosystem is that it explores different approaches to concurrency.
+The lab deliberately explores two fundamentally different approaches to concurrency.
 
----
+## ⚙️ Multi-Process
 
-## ⚙️ Multi-Process Model
-
-Used in:
+Primarily explored through:
 
 ```text
+php-memory-lab
+        ↓
+php-concurrency
+        ↓
 php-worker-pool
+        ↓
+php-job-queue
 ```
 
-Architecture:
+The model is based on:
 
 ```text
-                 Master
-                   │
-        ┌──────────┼──────────┐
-        │          │          │
-        ▼          ▼          ▼
-     Worker 1   Worker 2   Worker N
+Process
+   ↓
+IPC
+   ↓
+Worker
+   ↓
+Task
 ```
 
-The master manages multiple operating system processes.
+This provides a practical understanding of:
 
-This model explores:
-
-* `fork()`;
-* process lifecycle;
-* IPC;
-* supervision;
-* worker recycling.
+* process isolation
+* parallel execution
+* IPC
+* supervision
+* worker lifecycle
+* graceful shutdown
 
 ---
 
-## 🟥 Event-Driven Model
+## ⚡ Event-Driven
 
-Used in:
+Primarily explored through:
 
 ```text
+php-concurrency
+        ↓
 php-mini-cache
-
+        ↓
 php-mini-http-server
 ```
 
-Architecture:
+The model is based on:
 
 ```text
-                 Event Loop
-                      │
-          ┌───────────┼───────────┐
-          │           │           │
-          ▼           ▼           ▼
-      Client A     Client B     Client N
+Socket
+   ↓
+Event Loop
+   ↓
+Ready Event
+   ↓
+Handler
+   ↓
+Response
 ```
 
-One process manages many connections.
+This provides a practical understanding of:
 
-This model explores:
-
-* non-blocking I/O;
-* event loops;
-* connection state;
-* buffers;
-* timers.
+* non-blocking I/O
+* event loops
+* connection management
+* high concurrency
+* backpressure
+* asynchronous execution
 
 ---
 
-# 🧬 How the Projects Connect
+# 🔗 How the Projects Connect
 
-The projects are not isolated.
+The projects are not independent tutorials.
 
-They build on related concepts.
+Each one introduces mechanisms that become useful in later projects.
 
 ```text
-php-concurrency                 php-memory-lab
-       │                                 │
-       │ Concurrency                     │ Memory & OS
-       │ Processes                       │ Fundamentals
-       │ IPC                             │
-       │ Event Loops                     │
-       │ Fibers                          │
-       └───────────────┬─────────────────┘
-                       │
-       ┌───────────────┼──────────────────────────────┐
-       │               │                              │
-       ▼               ▼                              ▼
-php-worker-pool   php-mini-cache               php-mini-database
-       │               │                              │
-       ▼               ▼                              ▼
-php-job-queue   php-mini-http-server          Storage & Recovery
-       │               │                              │
-       ▼               ▼                              ▼
-Application        Server Runtime                Durable State
-Infrastructure
+🧠 Memory
+   │
+   ├── processes
+   ├── virtual memory
+   ├── COW
+   └── IPC foundations
+          │
+          ▼
+⚡ Concurrency
+   │
+   ├── fork()
+   ├── IPC
+   ├── event loops
+   └── Fibers
+          │
+          ├──────────────────┐
+          ▼                  ▼
+⚙️ Worker Pool          💾 Mini Cache
+          │                  │
+          ▼                  ▼
+📬 Job Queue          🌐 Mini HTTP Server
+          │                  │
+          └────────┬─────────┘
+                   │
+                   ▼
+             🗄️ Mini Database
+                   │
+                   └──────────────┐
+                                  │
+                                  ▼
+                       🏗️ Systems Platform
+                                  │
+                                  ▼
+                            🚀 Final System
 ```
+
+The same concepts appear repeatedly in different contexts.
+
+For example:
+
+```text
+IPC
+ │
+ ├── Worker Pool
+ │
+ └── Job Queue
+
+Event Loop
+ │
+ ├── Mini Cache
+ │
+ └── Mini HTTP Server
+
+Storage
+ │
+ └── Mini Database
+
+All of them
+ │
+ └── Systems Platform
+```
+
+This repetition is intentional.
+
+The objective is to recognize the same systems principles when they appear in different architectures.
 
 ---
 
 # 🎓 Suggested Learning Path
 
-The projects can be explored independently.
+The recommended progression is:
 
-However, the recommended order is:
+## Level 1 — 🧠 Memory & OS Fundamentals
 
-## Level 1 — Memory & OS Fundamentals
-
-### 🧠 `php-memory-lab`
-
-Start here to explore how PHP memory behavior relates to operating-system fundamentals.
-
----
-
-## Level 2 — Concurrency Fundamentals
-
-### 🧠 `php-concurrency`
+### `php-memory-lab`
 
 Learn:
 
-```text
-Processes
-
-↓
-
-IPC
-
-↓
-
-Synchronization
-
-↓
-
-Concurrency Patterns
-
-↓
-
-Event Loops
-
-↓
-
-Fibers
-```
+* memory
+* processes
+* virtual memory
+* COW
+* `mmap()`
+* RSS
+* shared memory
 
 ---
 
-## Level 3 — Process Runtime
+## Level 2 — ⚡ Concurrency Fundamentals
 
-### ⚙️ `php-worker-pool`
+### `php-concurrency`
 
 Learn:
 
-```text
-Master Process
-
-↓
-
-Workers
-
-↓
-
-IPC
-
-↓
-
-Dispatching
-
-↓
-
-Worker Lifecycle
-
-↓
-
-Graceful Shutdown
-```
+* processes
+* IPC
+* event loops
+* Fibers
+* asynchronous programming
+* concurrency patterns
 
 ---
 
-## Level 4 — Background Processing
+## Level 3 — ⚙️ Process Runtime
 
-### 📬 `php-job-queue`
+### `php-worker-pool`
 
 Learn:
 
-```text
-Jobs
-
-↓
-
-Queues
-
-↓
-
-Workers
-
-↓
-
-Reservation
-
-↓
-
-Processing
-
-↓
-
-ACK
-
-↓
-
-Retries
-```
+* master/worker architecture
+* persistent workers
+* supervision
+* lifecycle management
+* graceful shutdown
+* timeouts
+* backpressure
 
 ---
 
-## Level 5 — Event-Driven Servers
+## Level 4 — 📬 Background Processing
 
-### 🟥 `php-mini-cache`
+### `php-job-queue`
 
 Learn:
 
-```text
-TCP
-
-↓
-
-Connections
-
-↓
-
-Event Loop
-
-↓
-
-Non-Blocking I/O
-
-↓
-
-Protocol Parsing
-
-↓
-
-Storage
-```
+* asynchronous jobs
+* reservations
+* ACK
+* retries
+* idempotency
+* at-least-once processing
+* failure recovery
 
 ---
 
-## Level 6 — HTTP Server Runtime
+## Level 5 — 💾 Event-Driven Server
 
-### 🌐 `php-mini-http-server`
+### `php-mini-cache`
 
 Learn:
 
-```text
-TCP
-
-↓
-
-Event Loop
-
-↓
-
-HTTP
-
-↓
-
-Request Parsing
-
-↓
-
-Routing
-
-↓
-
-Middleware
-
-↓
-
-Handlers
-
-↓
-
-Responses
-```
+* TCP
+* non-blocking I/O
+* event loops
+* protocol processing
+* pipelining
+* TTL
+* response buffering
+* backpressure
 
 ---
 
-## Level 7 — Database Engine
+## Level 6 — 🌐 HTTP Server Runtime
 
-### 🗄️ `php-mini-database`
+### `php-mini-http-server`
 
 Learn:
 
-```text
-Files
+* HTTP parsing
+* routing
+* middleware
+* keep-alive
+* pipelining
+* connection lifecycle
+* HTTP timeouts
 
-↓
+---
 
-Pages
+## Level 7 — 🗄️ Database Engine
 
-↓
+### `php-mini-database`
 
-Records
+Learn:
 
-↓
+* storage
+* records
+* indexes
+* B-trees
+* SQL
+* transactions
+* WAL
+* crash recovery
+* database networking
 
-Indexes
+---
 
-↓
+## Level 8 — 🏗️ Final Platform
 
-SQL
+### `php-systems-platform`
 
-↓
+Bring everything together.
 
-Query Execution
+Learn:
 
-↓
+* system integration
+* component boundaries
+* runtime architecture
+* synchronous vs asynchronous execution
+* queues
+* workers
+* caching
+* persistence
+* networking
+* failure handling
+* graceful shutdown
+* observability
 
-Transactions
+The final objective is not another isolated component.
 
-↓
-
-WAL
-
-↓
-
-Crash Recovery
-```
+It is understanding how the components form a **complete backend platform**.
 
 ---
 
 # 🔬 Learn by Experimenting
 
-These projects are designed to be modified.
+The projects are designed to be actively experimented with.
 
-The recommended learning loop is:
+Do not only read the code.
 
-```text
-Read
-  │
-  ▼
-Run
-  │
-  ▼
-Observe
-  │
-  ▼
-Modify
-  │
-  ▼
-Break
-  │
-  ▼
-Debug
-  │
-  ▼
-Understand
-```
+Change it.
 
-Examples of experiments:
+Break it.
 
----
+Measure it.
 
-## Process Experiments
+Try things such as:
 
 ```text
-What happens when a Worker crashes?
-
-↓
-
-What happens when the Master restarts it?
-
-↓
-
-What happens during graceful shutdown?
+What happens if...
 ```
 
----
+* a worker crashes?
+* a socket closes unexpectedly?
+* a client sends a huge pipeline?
+* a job is processed twice?
+* an ACK is lost?
+* a database process crashes during a transaction?
+* a worker stops while processing a request?
+* the event loop is blocked?
+* memory usage grows continuously?
+* a client is much slower than the server?
+* the queue becomes full?
 
-## Memory & OS Experiments
+The interesting part is often not the normal path.
 
-```text
-How does memory usage change as a PHP program runs?
-
-↓
-
-What happens to memory when a process is created?
-
-↓
-
-Which behaviors are managed by PHP, and which by the operating system?
-```
-
----
-
-## Queue Experiments
-
-```text
-What happens when a Job fails?
-
-↓
-
-What happens when the Worker crashes?
-
-↓
-
-What happens when ACK is never received?
-```
-
----
-
-## Event Loop Experiments
-
-```text
-What happens with 100 connections?
-
-↓
-
-What happens with a slow client?
-
-↓
-
-What happens when buffers grow?
-```
-
----
-
-## HTTP Experiments
-
-```text
-What happens when an HTTP request arrives in pieces?
-
-↓
-
-What happens when one connection sends multiple requests?
-
-↓
-
-What happens during Keep-Alive?
-
-↓
-
-What happens during graceful shutdown?
-```
-
----
-
-## Storage & Durability Experiments
-
-```text
-What happens when the process is killed in the middle of a write?
-
-↓
-
-What does WAL replay restore after a crash?
-
-↓
-
-How does an index change the cost of a query?
-```
+The interesting part is what happens when things go wrong.
 
 ---
 
 # 🧪 Production-Inspired, Not Production-Ready
 
-These projects are inspired by real backend infrastructure.
+These projects intentionally resemble real backend infrastructure.
 
-They intentionally explore concepts used by technologies such as:
+They may contain concepts found in:
 
-```text
-PHP-FPM
+* Redis
+* PostgreSQL
+* RabbitMQ
+* PHP-FPM
+* Swoole
+* RoadRunner
+* FrankenPHP
+* asynchronous runtimes
+* distributed systems
 
-RoadRunner
+But they are **not intended to replace those systems**.
 
-Swoole
+They intentionally sacrifice:
 
-FrankenPHP
+* feature completeness
+* performance
+* operational maturity
+* security hardening
+* production compatibility
+* ecosystem integration
 
-Redis
+in favor of:
 
-RabbitMQ
+* readability
+* experimentation
+* explicit mechanisms
+* small implementations
+* understandable architecture
 
-Nginx
+The goal is not:
 
-Apache
+> "Build a better Redis."
 
-SQLite
+The goal is:
 
-MySQL
+> "Understand why Redis needs an event loop."
 
-PostgreSQL
-```
+The goal is not:
 
-However, the goal is not to compete with them.
+> "Build a production database."
 
-Production systems contain many additional concerns:
+The goal is:
 
-```text
-Security
-
-TLS
-
-HTTP/2
-
-HTTP/3
-
-Observability
-
-Metrics
-
-Distributed Systems
-
-High Availability
-
-Load Balancing
-
-Configuration
-
-Plugins
-
-Hot Reload
-
-Production Hardening
-```
-
-Those features are important.
-
-But they can hide the fundamental architecture.
-
-PHP Systems Lab focuses on:
-
-> **Understanding the core idea first.**
+> "Understand how storage, indexes, transactions, and recovery fit together."
 
 ---
 
 # 🧰 Shared Conventions
 
-The projects are independent repositories, but they are built the same way, so that moving between them costs nothing.
+The projects generally follow the same development conventions.
 
-```text
-Docker              nothing is installed on your machine
-Makefile            the same verbs everywhere
-Composer            PSR-4, PHP 8.5, platform extensions declared
-PHPUnit             tests/ next to src/
-PHPStan             level 8 where the code allows it
-PHP-CS-Fixer        one shared .php-cs-fixer.dist.php
-GitHub Actions      test, analyse, format:check on every push
-docs/DECISIONS.md   what was decided, and why
-docs/PHASES.md      how it was built, phase by phase
-```
+Typical tooling includes:
 
-The verbs:
+* Docker
+* Makefile
+* Composer
+* PHPUnit
+* PHPStan
+* PHP-CS-Fixer
+* GitHub Actions
+
+Typical commands:
 
 ```bash
-make install         # build the image and install dependencies
-make test            # PHPUnit
-make analyse         # PHPStan
-make format-check    # PHP-CS-Fixer, dry run
-make format          # apply PHP-CS-Fixer
-make shell           # a shell in the container
+make install
+make test
+make analyse
+make format-check
+make format
+make shell
 ```
 
-`php-memory-lab` carries the most complete version of this and is the reference for it - including `tests/DocumentationTest.php`, which checks that every link, path and command in the documentation still resolves.
+Project-specific commands may differ.
 
-`php-concurrency` is the deliberate exception: it is a lesson course rather than an engineered project, so each lesson is a directory with a `README.md`, a `diagram.txt` and a runnable `main.php`, with no Composer package around it.
+---
+
+# 📖 Documentation
+
+Projects use documentation to explain the mechanisms rather than simply documenting APIs.
+
+Typical documentation includes:
+
+```text
+README.md
+docs/
+├── DECISIONS.md
+├── PHASES.md
+└── ...
+```
+
+Important architectural decisions should be documented.
+
+The purpose is to preserve the reasoning behind the implementation.
 
 ---
 
 # 📦 These Are Not Libraries
 
-None of these projects is published, and none depends on another as a package.
+The repositories are intentionally built as educational systems.
+
+They should be:
 
 ```text
-What travels between them:
-
-   the mechanism        read in one, reimplemented in the next
-   the measurement      a number you can reproduce
-   the conventions      the same Makefile, the same formatter
-
-What does not travel:
-
-   the code             deliberately
+Read
+ ↓
+Run
+ ↓
+Measure
+ ↓
+Modify
+ ↓
+Break
+ ↓
+Debug
+ ↓
+Understand
 ```
 
-So `php-worker-pool` has its own shared-memory telemetry and `php-job-queue` its own queue, even though `php-memory-lab` implements both. That is the point: rebuilding a mechanism is how you learn it, and a shared dependency would remove exactly the work that teaches.
+They are not intended to become dependencies for production applications.
 
-Every project declares `"license": "MIT"` in its `composer.json` and says so in its README. There is no `LICENSE` file, by choice.
+If a production-ready library is needed, use an established project.
+
+If the goal is to understand how the mechanism works, build the simplified version.
 
 ---
 
 # 🧠 The Core Philosophy
 
-Every project should answer:
+The lab follows a simple idea:
+
+> **Small systems are easier to understand than large abstractions.**
+
+Instead of hiding complexity behind frameworks, the projects expose it.
+
+Instead of:
 
 ```text
-What problem does this solve?
-
-↓
-
-Why does this component exist?
-
-↓
-
-What happens if we remove it?
-
-↓
-
-What failure scenario does it prevent?
+Framework
+    ↓
+Magic
+    ↓
+Application
 ```
 
-The goal is not memorization.
-
-The goal is building a mental model.
-
----
-
-# 🔭 Future Directions
-
-The ecosystem can grow in several directions.
-
-## Process-Based Infrastructure
+the lab tries to show:
 
 ```text
-php-concurrency
-       │
-       ▼
-php-worker-pool
-       │
-       ▼
-php-job-queue
+Operating System
+        ↓
+Processes
+        ↓
+Memory / IPC
+        ↓
+Event Loop / Sockets
+        ↓
+Workers
+        ↓
+Storage
+        ↓
+Protocols
+        ↓
+Application
+        ↓
+Complete System
 ```
 
-Possible future projects:
-
-```text
-php-process-supervisor
-
-php-mini-runtime
-```
-
----
-
-## Event-Driven Networking
-
-```text
-php-mini-cache
-       │
-       ▼
-php-mini-http-server
-```
-
-Possible future experiments:
-
-```text
-WebSocket Server
-
-Custom TCP Protocol
-
-Mini Proxy Server
-```
-
----
-
-## Storage & Persistence
-
-```text
-php-memory-lab
-       │
-       ▼
-php-mini-cache
-       │
-       ▼
-php-mini-database
-```
-
-Possible future experiments:
-
-```text
-Alternative Index Structures
-
-Query Plan Visualization
-
-Replication
-```
+The objective is to understand the layers underneath modern backend frameworks.
 
 ---
 
 # 🏗️ The Main Principle
 
-This ecosystem does not try to build:
-
-> Another production-ready framework.
-
-It tries to build:
-
-> **Executable mental models of backend infrastructure.**
-
-Every project should remain:
+The lab follows a progression:
 
 ```text
-Small enough to understand.
-
-Real enough to experiment with.
-
-Simple enough to modify.
-
-Complex enough to teach something important.
+Understand the mechanism
+        ↓
+Implement the mechanism
+        ↓
+Combine mechanisms
+        ↓
+Observe emergent problems
+        ↓
+Solve the problems
+        ↓
+Build a subsystem
+        ↓
+Integrate subsystems
+        ↓
+Build a complete system
 ```
+
+For example:
+
+```text
+fork()
+ ↓
+IPC
+ ↓
+Worker Pool
+ ↓
+Job Queue
+ ↓
+Background Processing
+ ↓
+Integrated Platform
+```
+
+Or:
+
+```text
+socket()
+ ↓
+non-blocking I/O
+ ↓
+event loop
+ ↓
+protocol parser
+ ↓
+HTTP server
+ ↓
+application runtime
+ ↓
+integrated platform
+```
+
+---
+
+# 🔭 Future Directions
+
+The lab can continue evolving toward more advanced systems topics.
+
+Possible future experiments include:
+
+* distributed coordination
+* replication
+* consensus concepts
+* sharding
+* distributed locks
+* service discovery
+* rate limiting
+* circuit breakers
+* observability
+* metrics
+* tracing
+* load balancing
+* connection pooling
+* caching strategies
+* persistent queues
+* database replication
+* fault injection
+* benchmarking
+* Linux networking
+* kernel interaction
+* native extensions
+
+These should be added only when they provide a meaningful new systems concept.
+
+The project should avoid growing simply for the sake of adding features.
 
 ---
 
 # 🗺️ The Mental Map
 
-```text
-BACKEND SYSTEMS
-│
-├── MEMORY & OS
-│   └── php-memory-lab
-│
-├── CONCURRENCY
-│   └── php-concurrency
-│
-├── PROCESSES
-│   ├── php-worker-pool
-│   └── php-job-queue
-│
-├── STORAGE
-│   └── php-mini-database
-│
-└── NETWORKING
-    ├── php-mini-cache
-    └── php-mini-http-server
+The entire lab can be reduced to one mental model:
 
-All projects
-    │
-    ▼
-Experiments
-    │
-    ▼
-Understanding
+```text
+                         🧠 MEMORY
+                            │
+                            ▼
+                       ⚡ PROCESSES
+                            │
+                            ▼
+                       🔀 CONCURRENCY
+                       /            \
+                      /              \
+                     ▼                ▼
+              ⚙️ WORKERS          ⚡ EVENT LOOP
+                  │                    │
+                  ▼                    ▼
+             📬 JOB QUEUE        🌐 NETWORKING
+                                       │
+                              ┌────────┴────────┐
+                              ▼                 ▼
+                          💾 CACHE           🌐 HTTP
+                              │                 │
+                              └────────┬────────┘
+                                       │
+                                       ▼
+                                  🗄️ DATABASE
+                                       │
+                                       ▼
+                              🏗️ INTEGRATION
+                                       │
+                                       ▼
+                              🚀 FINAL PLATFORM
 ```
 
----
+This is the conceptual map of the repository.
 
-# Final Principle
-
-> **Don't just use infrastructure.**
-
-> **Build a small version of it.**
-
-> **Run it.**
-
-> **Modify it.**
-
-> **Break it.**
-
-> **Understand it.**
+The projects are different implementations of the same underlying systems ideas.
 
 ---
 
-# License
+# 🚀 From Mechanisms to Systems
 
-MIT
+The most important transition happens near the end of the learning path.
+
+At first, the questions are local:
+
+```text
+How does fork() work?
+How does mmap() work?
+How does IPC work?
+How does an event loop work?
+How does a B-tree work?
+```
+
+Later, the questions become architectural:
+
+```text
+Where should processes live?
+
+What should be asynchronous?
+
+Where should backpressure be applied?
+
+How should failures propagate?
+
+How should components communicate?
+
+How should the system shut down?
+
+What happens when one subsystem becomes overloaded?
+
+How do persistence and concurrency interact?
+```
+
+Finally:
+
+```text
+How do all of these mechanisms form one coherent system?
+```
+
+That is the purpose of `php-systems-platform`.
+
+---
+
+# 🎯 Final Principle
+
+> **Do not learn backend infrastructure only by using it. Learn it by rebuilding simplified versions of it.**
+
+The purpose of PHP Systems Lab is to make invisible mechanisms visible.
+
+Memory becomes measurable.
+
+Processes become observable.
+
+Concurrency becomes executable.
+
+Queues become understandable.
+
+Event loops become inspectable.
+
+Protocols become parsable.
+
+Storage becomes tangible.
+
+Databases become buildable.
+
+And eventually:
+
+```text
+                         🧪 PHP SYSTEMS LAB
+                                  │
+        ┌─────────────────────────┼─────────────────────────┐
+        │                         │                         │
+     🧠 Memory                ⚡ Concurrency             🌐 Network
+        │                         │                         │
+        │              ┌──────────┴──────────┐              │
+        │              │                     │              │
+        ▼              ▼                     ▼              ▼
+     Processes      ⚙️ Workers          📬 Jobs          💾 Cache
+        │              │                     │              │
+        │              └──────────┬──────────┘              │
+        │                         │                         │
+        └─────────────────────────┼─────────────────────────┘
+                                  │
+                                  ▼
+                           🗄️ Database
+                                  │
+                                  ▼
+                         🏗️ Systems Platform
+                                  │
+                                  ▼
+                            🚀 Final System
+```
+
+**Understand the mechanism.
+Build the mechanism.
+Connect the mechanisms.
+Understand the system.**
+
+---
+
+# 📄 License
+
+All projects in PHP Systems Lab are released under the **MIT License**.
