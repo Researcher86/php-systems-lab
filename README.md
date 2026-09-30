@@ -17,35 +17,68 @@ Every project is designed to be:
 
 ---
 
+# 📦 Repositories
+
+| Level | Project | Focus |
+| ----- | ------- | ----- |
+| 1 | 🧠 [`php-memory-lab`](https://github.com/Researcher86/php-memory-lab) | memory, RSS, fork, copy-on-write, `mmap`, shared memory, FFI |
+| 2 | ⚡ [`php-concurrency`](https://github.com/Researcher86/php-concurrency) | processes, IPC, concurrency patterns, event loops, Fibers (course in Russian) |
+| 3 | ⚙️ [`php-worker-pool`](https://github.com/Researcher86/php-worker-pool) | persistent master/worker pool, supervision, graceful shutdown |
+| 4 | 📬 [`php-job-queue`](https://github.com/Researcher86/php-job-queue) | reliable background jobs: delivery leases, ACK, retries, DLQ |
+| 5 | 💾 [`php-mini-cache`](https://github.com/Researcher86/php-mini-cache) | event-driven in-memory server: RESP, pipelining, TTL, Pub/Sub |
+| 6 | 🌐 [`php-mini-http-server`](https://github.com/Researcher86/php-mini-http-server) | event-driven HTTP server: parsing, routing, middleware, keep-alive |
+| 7 | 🗄️ [`php-mini-database`](https://github.com/Researcher86/php-mini-database) | relational engine: pages, B-trees, SQL, transactions, WAL, recovery |
+| 8 | 🏗️ [`php-systems-platform`](https://github.com/Researcher86/php-systems-platform) | integration of the components into one backend platform |
+
+Every project README opens with the same navigation line (level, previous,
+next) and ends with the same **PHP Systems Lab** section, so the lab can be
+walked in order from any repository.
+
+---
+
 # 🗺️ Architecture
 
-The projects form a progressive systems stack.
+The projects form a progressive systems stack. Arrows show the **learning
+order**: which mechanisms a project builds on conceptually.
 
 ```text
                          🧪 PHP SYSTEMS LAB
                                   │
+          ┌───────────────────────┴───────────────────────┐
+          ▼                                               ▼
+   🧠 php-memory-lab  ───────────────────────►  ⚡ php-concurrency
+     what it costs                               how it is coordinated
+          │                                               │
+          └───────────────────────┬───────────────────────┘
+                                  │
           ┌───────────────────────┼───────────────────────┐
-          │                       │                       │
           ▼                       ▼                       ▼
-   🧠 php-memory-lab      ⚡ php-concurrency        🌐 Networking
+     Multi-process           Event-driven              Storage
           │                       │                       │
-          │               ┌───────┴───────┐               │
-          │               ▼               ▼               ▼
-          │        ⚙️ php-worker-pool  📬 php-job-queue  💾 php-mini-cache
-          │               │               │               │
-          │               └───────┬───────┘               ▼
-          │                       │              🌐 php-mini-http-server
+   ⚙️ php-worker-pool     💾 php-mini-cache       🗄️ php-mini-database
+   📬 php-job-queue       🌐 php-mini-http-server         │
           │                       │                       │
-          └───────────────┐       │                       │
-                          ▼       ▼                       │
-                 🗄️ php-mini-database     💡 Shared Concepts
-                          │               ▲               │
-                          └───────┬───────┘               │
-                                  ▼                       │
-                       🏗️ php-systems-platform ◄──────────┘
+          └───────────────────────┼───────────────────────┘
+                                  ▼
+                       🏗️ php-systems-platform
                                   │
                                   ▼
                          🚀 FINAL PLATFORM
+```
+
+The **package dependencies** are simpler than the learning order. Levels 1–7
+are independent repositories: none of them requires another through
+Composer. Only `php-systems-platform` does, and it requires exactly five:
+
+```text
+php-systems-platform
+ ├── researcher86/php-worker-pool
+ ├── researcher86/php-job-queue
+ ├── researcher86/php-mini-cache
+ ├── researcher86/php-mini-http-server
+ └── researcher86/php-mini-database
+
+php-memory-lab, php-concurrency   → concepts only, reimplemented where needed
 ```
 
 The progression is intentional:
@@ -70,7 +103,7 @@ Complete Platform
 
 ## 🧠 PHP Memory Lab
 
-### `php-memory-lab`
+### [`php-memory-lab`](https://github.com/Researcher86/php-memory-lab)
 
 Exploring memory and operating-system fundamentals from PHP.
 
@@ -88,6 +121,11 @@ Topics include:
 * allocation behavior
 * FFI and native memory
 * interaction between PHP and the operating system
+* garbage collection
+* Unix-socket IPC with message framing
+* SysV semaphores and race conditions
+* a shared-memory ring buffer
+* a benchmark harness and an experiments CLI
 
 ### Core questions
 
@@ -104,7 +142,7 @@ This project provides the low-level foundation for the rest of the lab.
 
 ## ⚡ PHP Concurrency
 
-### `php-concurrency`
+### [`php-concurrency`](https://github.com/Researcher86/php-concurrency)
 
 Exploring the fundamental building blocks of concurrency in PHP.
 
@@ -115,17 +153,22 @@ Topics include:
 * IPC
 * pipes
 * Unix sockets
-* `socket_pair()`
+* `stream_socket_pair()`
 * worker processes
 * process supervision
 * event loops
 * Fibers
 * asynchronous programming
-* Amp / Revolt
-* ReactPHP
-* concurrency patterns
+* concurrency patterns: producer/consumer, fan-out/fan-in, pipelines, actors, RPC, work stealing
+* reliability patterns: retry with backoff, circuit breaker, rate limiter, dead-letter queue
 * at-least-once execution
 * idempotency
+* mini PHP-FPM, RoadRunner, Messenger and Temporal-style runtimes
+* how Amp / Revolt and ReactPHP compare to the runtime built by hand
+
+The project is a course of 38 lessons, written in Russian. Each lesson is a
+folder with its own `README.md`, an ASCII diagram and a runnable `main.php`;
+it needs no Composer dependencies, only PHP with `pcntl`/`posix` in Docker.
 
 The project deliberately contains small independent experiments.
 
@@ -145,7 +188,7 @@ Each experiment should be easy to run, inspect, modify, and break.
 
 ## ⚙️ PHP Worker Pool
 
-### `php-worker-pool`
+### [`php-worker-pool`](https://github.com/Researcher86/php-worker-pool)
 
 An educational implementation of a persistent multi-process worker pool.
 
@@ -166,6 +209,8 @@ Topics include:
 * timeouts
 * backpressure
 * failure handling
+* a length-prefixed protocol with correlation IDs
+* graceful reload, worker recycling and autoscaling
 
 ### Worker lifecycle
 
@@ -189,6 +234,9 @@ The pool also explores transitions between:
 IDLE ⇄ BUSY
 ```
 
+The real transition table is wider: draining can start from `STARTING`,
+`IDLE` or `BUSY`, and a worker can die from any state.
+
 ### Core questions
 
 * How does a master process communicate with workers?
@@ -196,7 +244,8 @@ IDLE ⇄ BUSY
 * What happens when a worker is shutting down?
 * How can a pool drain gracefully?
 * How should request and execution timeouts differ?
-* How can a pool avoid losing work?
+* How can a pool avoid losing work? (It is at-most-once by design — keeping
+  the work is what `php-job-queue` is for.)
 
 The project is intentionally educational rather than a production process manager.
 
@@ -204,7 +253,7 @@ The project is intentionally educational rather than a production process manage
 
 ## 📬 PHP Job Queue
 
-### `php-job-queue`
+### [`php-job-queue`](https://github.com/Researcher86/php-job-queue)
 
 An educational implementation of a reliable background job processing system.
 
@@ -213,14 +262,17 @@ Topics include:
 * job producers
 * workers
 * queues
-* reservations
+* delivery leases and fencing
 * acknowledgements
-* retries
+* retries with fixed and exponential backoff
+* delayed jobs
+* priorities and fair scheduling
 * failure handling
 * visibility timeouts
 * idempotency
 * at-least-once delivery
 * dead-letter handling
+* append-only file persistence
 * worker lifecycle
 * graceful shutdown
 
@@ -239,7 +291,7 @@ The project connects the process/concurrency concepts with real backend infrastr
 
 ## 💾 PHP Mini Cache
 
-### `php-mini-cache`
+### [`php-mini-cache`](https://github.com/Researcher86/php-mini-cache)
 
 An educational event-driven in-memory cache/database server.
 
@@ -251,16 +303,18 @@ Topics include:
 * sockets
 * event loops
 * non-blocking I/O
-* command parsing
+* the RESP protocol and command parsing
 * request processing
 * response buffering
 * pipelining
 * TTL
 * expiration
 * pub/sub
+* `MULTI` / `EXEC` transactions and `WATCH` optimistic locking
+* snapshot persistence through a forked child
 * backpressure
 * batching
-* event-loop fairness
+* event-loop fairness (measured)
 
 ### Core questions
 
@@ -278,7 +332,7 @@ The goal is to understand the mechanics behind event-driven network servers.
 
 ## 🌐 PHP Mini HTTP Server
 
-### `php-mini-http-server`
+### [`php-mini-http-server`](https://github.com/Researcher86/php-mini-http-server)
 
 An educational event-driven HTTP server written in PHP.
 
@@ -314,7 +368,7 @@ This project builds the networking layer that sits between low-level event-drive
 
 ## 🗄️ PHP Mini Database
 
-### `php-mini-database`
+### [`php-mini-database`](https://github.com/Researcher86/php-mini-database)
 
 A small, readable relational database written in PHP.
 
@@ -331,9 +385,11 @@ Topics include:
 * B-trees
 * SQL parsing
 * query execution
-* transactions
+* transactions, savepoints and isolation levels
+* a query planner and optimizer
 * WAL
 * crash recovery
+* backup
 * locking
 * durability
 * client/server architecture
@@ -374,7 +430,7 @@ The project is intentionally small enough to understand while still exposing the
 
 ## 🏗️ PHP Systems Platform
 
-### `php-systems-platform`
+### [`php-systems-platform`](https://github.com/Researcher86/php-systems-platform)
 
 The final integration layer of PHP Systems Lab.
 
@@ -522,7 +578,7 @@ The projects are not independent tutorials.
 Each one introduces mechanisms that become useful in later projects.
 
 ```text
-🧠 Memory
+🧠 Memory  (Level 1)
    │
    ├── processes
    ├── virtual memory
@@ -530,33 +586,36 @@ Each one introduces mechanisms that become useful in later projects.
    └── IPC foundations
           │
           ▼
-⚡ Concurrency
+⚡ Concurrency  (Level 2)
    │
    ├── fork()
    ├── IPC
    ├── event loops
    └── Fibers
           │
-          ├──────────────────┐
-          ▼                  ▼
-⚙️ Worker Pool          💾 Mini Cache
-          │                  │
-          ▼                  ▼
-📬 Job Queue          🌐 Mini HTTP Server
-          │                  │
-          └────────┬─────────┘
-                   │
-                   ▼
-             🗄️ Mini Database
-                   │
-                   └──────────────┐
-                                  │
-                                  ▼
-                       🏗️ Systems Platform
-                                  │
-                                  ▼
-                            🚀 Final System
+          ├─────────────────────────┐
+          ▼                         ▼
+   multi-process               event-driven
+          │                         │
+          ▼                         ▼
+⚙️ Worker Pool  (Level 3)    💾 Mini Cache  (Level 5)
+          │                         │
+          ▼                         ▼
+📬 Job Queue  (Level 4)      🌐 Mini HTTP Server  (Level 6)
+
+🗄️ Mini Database  (Level 7) — storage: pages, indexes, WAL
+          │
+          └───────────── all five components ─────────────┐
+                                                           ▼
+                                           🏗️ Systems Platform  (Level 8)
+                                                           │
+                                                           ▼
+                                                    🚀 Final System
 ```
+
+These arrows are conceptual. The code does not flow along them: each
+component reimplements what it needs, and the only package dependencies are
+the five components required by `php-systems-platform`.
 
 The same concepts appear repeatedly in different contexts.
 
@@ -596,7 +655,7 @@ The recommended progression is:
 
 ## Level 1 — 🧠 Memory & OS Fundamentals
 
-### `php-memory-lab`
+### [`php-memory-lab`](https://github.com/Researcher86/php-memory-lab)
 
 Learn:
 
@@ -612,7 +671,7 @@ Learn:
 
 ## Level 2 — ⚡ Concurrency Fundamentals
 
-### `php-concurrency`
+### [`php-concurrency`](https://github.com/Researcher86/php-concurrency)
 
 Learn:
 
@@ -627,7 +686,7 @@ Learn:
 
 ## Level 3 — ⚙️ Process Runtime
 
-### `php-worker-pool`
+### [`php-worker-pool`](https://github.com/Researcher86/php-worker-pool)
 
 Learn:
 
@@ -643,7 +702,7 @@ Learn:
 
 ## Level 4 — 📬 Background Processing
 
-### `php-job-queue`
+### [`php-job-queue`](https://github.com/Researcher86/php-job-queue)
 
 Learn:
 
@@ -651,6 +710,9 @@ Learn:
 * reservations
 * ACK
 * retries
+* delayed jobs
+* visibility timeouts
+* dead-letter queues
 * idempotency
 * at-least-once processing
 * failure recovery
@@ -659,16 +721,18 @@ Learn:
 
 ## Level 5 — 💾 Event-Driven Server
 
-### `php-mini-cache`
+### [`php-mini-cache`](https://github.com/Researcher86/php-mini-cache)
 
 Learn:
 
 * TCP
 * non-blocking I/O
 * event loops
-* protocol processing
+* the RESP protocol
 * pipelining
 * TTL
+* pub/sub
+* transactions
 * response buffering
 * backpressure
 
@@ -676,7 +740,7 @@ Learn:
 
 ## Level 6 — 🌐 HTTP Server Runtime
 
-### `php-mini-http-server`
+### [`php-mini-http-server`](https://github.com/Researcher86/php-mini-http-server)
 
 Learn:
 
@@ -692,7 +756,7 @@ Learn:
 
 ## Level 7 — 🗄️ Database Engine
 
-### `php-mini-database`
+### [`php-mini-database`](https://github.com/Researcher86/php-mini-database)
 
 Learn:
 
@@ -710,7 +774,7 @@ Learn:
 
 ## Level 8 — 🏗️ Final Platform
 
-### `php-systems-platform`
+### [`php-systems-platform`](https://github.com/Researcher86/php-systems-platform)
 
 Bring everything together.
 
@@ -838,18 +902,28 @@ Typical tooling includes:
 * PHP-CS-Fixer
 * GitHub Actions
 
-Typical commands:
+Every Composer-based project (Levels 1 and 3–8) provides the same commands.
+They all run inside the project's Docker container:
 
 ```bash
-make install
-make test
-make analyse
-make format-check
-make format
-make shell
+make install        # composer install
+make test           # PHPUnit
+make analyse        # PHPStan
+make format-check   # PHP-CS-Fixer, check only (what CI runs)
+make format         # PHP-CS-Fixer, apply
+make shell          # a shell in the container
 ```
 
-Project-specific commands may differ.
+The same checks exist as Composer scripts (`composer test`, `composer
+analyse`, `composer format:check`, `composer format`), and every package is
+published under the `researcher86/` vendor.
+
+Project-specific commands (`make run-server`, `make bench`,
+`make example EXAMPLE=…`) are documented in each README.
+
+`php-concurrency` is the exception: it is a course, not a package, so it has
+only `make up`, `make shell` and `make down`, and lessons run as
+`php NN_lesson/main.php` inside the container.
 
 ---
 
@@ -1075,7 +1149,7 @@ The entire lab can be reduced to one mental model:
                               🚀 FINAL PLATFORM
 ```
 
-This is the conceptual map of the repository.
+This is the conceptual map of the repository, not a dependency graph.
 
 The projects are different implementations of the same underlying systems ideas.
 
