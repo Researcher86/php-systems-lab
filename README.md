@@ -914,6 +914,10 @@ make format         # PHP-CS-Fixer, apply
 make shell          # a shell in the container
 ```
 
+GitHub Actions runs exactly these targets — `make build`, `make install`,
+`make test`, `make analyse`, `make format-check` — in the same Docker image,
+so CI checks the environment the project is developed in.
+
 The same checks exist as Composer scripts (`composer test`, `composer
 analyse`, `composer format:check`, `composer format`), and every package is
 published under the `researcher86/` vendor.
