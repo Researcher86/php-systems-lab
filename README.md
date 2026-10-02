@@ -605,7 +605,7 @@ Each one introduces mechanisms that become useful in later projects.
 
 🗄️ Mini Database  (Level 7) — storage: pages, indexes, WAL
           │
-          └───────────── all five components ─────────────┐
+          └───────────── all five components ──────────────┐
                                                            ▼
                                            🏗️ Systems Platform  (Level 8)
                                                            │
