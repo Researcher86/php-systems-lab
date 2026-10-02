@@ -1083,37 +1083,23 @@ integrated platform
 
 ---
 
-# 🔭 Future Directions
+# 🚫 Out of Scope
 
-The lab can continue evolving toward more advanced systems topics.
+The lab is complete. Its components are released as `v1.0.0`, and the
+platform is the only capstone.
 
-Possible future experiments include:
+It deliberately stops at one machine and one process tree. These topics are
+out of scope, not postponed:
 
-* distributed coordination
-* replication
-* consensus concepts
-* sharding
-* distributed locks
-* service discovery
-* rate limiting
-* circuit breakers
-* observability
-* metrics
-* tracing
-* load balancing
-* connection pooling
-* caching strategies
-* persistent queues
-* database replication
-* fault injection
-* benchmarking
-* Linux networking
-* kernel interaction
-* native extensions
+* distributed systems: replication, consensus, sharding, distributed locks
+* service discovery, load balancing and orchestration
+* a production observability or tracing stack
+* more queues, caches, HTTP servers, databases or runtimes
 
-These should be added only when they provide a meaningful new systems concept.
-
-The project should avoid growing simply for the sake of adding features.
+Each of these deserves a real system built for it, not a sixth subsystem
+here. The boundary is the one drawn in
+[Production-Inspired, Not Production-Ready](#-production-inspired-not-production-ready):
+understand the mechanism, do not rebuild the product.
 
 ---
 
