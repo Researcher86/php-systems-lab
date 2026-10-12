@@ -438,7 +438,7 @@ Instead of implementing another isolated system, this project brings the mechani
 
 The platform is where the individual experiments become a complete system.
 
-Potential integrated components include:
+Integrated components:
 
 * HTTP server
 * application runtime
@@ -454,7 +454,7 @@ Potential integrated components include:
 * graceful shutdown
 * failure handling
 
-### Architectural goal
+### Architecture
 
 ```text
                     🌐 HTTP
@@ -926,7 +926,8 @@ Project-specific commands (`make run-server`, `make bench`,
 `make example EXAMPLE=…`) are documented in each README.
 
 `php-concurrency` is the exception: it is a course, not a package, so it has
-only `make up`, `make shell` and `make down`, and lessons run as
+`make build`, `make up`, `make shell`, `make down`, `make lint` and
+`make smoke` (the last two are what its CI runs), and lessons run as
 `php NN_lesson/main.php` inside the container.
 
 ---
@@ -1085,8 +1086,8 @@ integrated platform
 
 # 🚫 Out of Scope
 
-The lab is complete. Its components are released as `v1.0.0`, and the
-platform is the only capstone.
+The lab is complete. The five Composer components are released as
+`v1.0.0`, and the platform is the only capstone.
 
 It deliberately stops at one machine and one process tree. These topics are
 out of scope, not postponed:
