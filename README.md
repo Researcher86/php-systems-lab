@@ -1,6 +1,6 @@
 # PHP Systems Lab
 
-> A collection of small educational PHP projects for exploring memory, operating systems, concurrency, processes, event-driven architecture, networking, storage engines, and backend infrastructure.
+> A collection of small educational PHP projects for exploring memory, operating systems, concurrency, processes, event-driven architecture, networking, storage engines, full-text search, and backend infrastructure.
 
 The goal is not to build production-ready replacements.
 
@@ -28,7 +28,8 @@ Every project is designed to be:
 | 5 | 💾 [`php-mini-cache`](https://github.com/Researcher86/php-mini-cache) | event-driven in-memory server: RESP, pipelining, TTL, Pub/Sub |
 | 6 | 🌐 [`php-mini-http-server`](https://github.com/Researcher86/php-mini-http-server) | event-driven HTTP server: parsing, routing, middleware, keep-alive |
 | 7 | 🗄️ [`php-mini-database`](https://github.com/Researcher86/php-mini-database) | relational engine: pages, B-trees, SQL, transactions, WAL, recovery |
-| 8 | 🏗️ [`php-systems-platform`](https://github.com/Researcher86/php-systems-platform) | integration of the components into one backend platform |
+| 8 | 🔎 [`php-mini-search`](https://github.com/Researcher86/php-mini-search) | full-text search: analysis, stemming, inverted index, BM25, reindexing |
+| 9 | 🏗️ [`php-systems-platform`](https://github.com/Researcher86/php-systems-platform) | integration of the components into one backend platform |
 
 Every project README opens with the same navigation line (level, previous,
 next) and ends with the same **PHP Systems Lab** section, so the lab can be
@@ -53,10 +54,10 @@ order**: which mechanisms a project builds on conceptually.
                                   │
           ┌───────────────────────┼───────────────────────┐
           ▼                       ▼                       ▼
-     Multi-process           Event-driven              Storage
+     Multi-process           Event-driven         Storage & search
           │                       │                       │
    ⚙️ php-worker-pool     💾 php-mini-cache       🗄️ php-mini-database
-   📬 php-job-queue       🌐 php-mini-http-server         │
+   📬 php-job-queue       🌐 php-mini-http-server 🔎 php-mini-search
           │                       │                       │
           └───────────────────────┼───────────────────────┘
                                   ▼
@@ -66,9 +67,9 @@ order**: which mechanisms a project builds on conceptually.
                          🚀 FINAL PLATFORM
 ```
 
-The **package dependencies** are simpler than the learning order. Levels 1–7
+The **package dependencies** are simpler than the learning order. Levels 1–8
 are independent repositories: none of them requires another through
-Composer. Only `php-systems-platform` does, and it requires exactly five:
+Composer. Only `php-systems-platform` does, and it requires exactly six:
 
 ```text
 php-systems-platform
@@ -76,7 +77,8 @@ php-systems-platform
  ├── researcher86/php-job-queue
  ├── researcher86/php-mini-cache
  ├── researcher86/php-mini-http-server
- └── researcher86/php-mini-database
+ ├── researcher86/php-mini-database
+ └── researcher86/php-mini-search      (run as a service, spoken to over HTTP)
 
 php-memory-lab, php-concurrency   → concepts only, reimplemented where needed
 ```
@@ -428,6 +430,55 @@ The project is intentionally small enough to understand while still exposing the
 
 ---
 
+## 🔎 PHP Mini Search
+
+### [`php-mini-search`](https://github.com/Researcher86/php-mini-search)
+
+An educational full-text search service written in PHP.
+
+Every other project finds data by key. This one finds it by meaning,
+approximately: `кабель` has to find `Кабели USB-C`, and the better match
+has to come first.
+
+Topics include:
+
+* Unicode normalization and tokenization
+* Snowball stemming for Russian and English, ported by hand
+* inverted indexes and posting lists
+* AND queries by intersecting postings from the rarest term
+* BM25 relevance ranking
+* a derived index kept in sync with its source of truth
+* out-of-order writes, source versions and tombstones
+* full reindexing by generation
+* an append-only log, fsync and crash recovery
+* a single-loop HTTP server, measured against slow clients
+
+### Search pipeline
+
+```text
+Document
+ ↓
+NFKC → lowercase → tokens → stems
+ ↓
+Inverted index (term → documents)
+ ↓
+Query: intersect, score with BM25
+ ↓
+Ranked ids
+```
+
+### Core questions
+
+* What is a word, once Unicode, case and morphology are involved?
+* How do you find every document with all the words without reading every document?
+* What does "more relevant" mean, as a number?
+* How does a copy of someone else's data stay correct when updates arrive late, twice, or out of order?
+
+The platform uses it as a separate service: it starts the binary and speaks
+to it only over HTTP.
+
+---
+
 ## 🏗️ PHP Systems Platform
 
 ### [`php-systems-platform`](https://github.com/Researcher86/php-systems-platform)
@@ -544,6 +595,8 @@ php-concurrency
 php-mini-cache
         ↓
 php-mini-http-server
+        ↓
+php-mini-search
 ```
 
 The model is based on:
@@ -605,9 +658,12 @@ Each one introduces mechanisms that become useful in later projects.
 
 🗄️ Mini Database  (Level 7) — storage: pages, indexes, WAL
           │
-          └───────────── all five components ──────────────┐
+          ▼
+🔎 Mini Search  (Level 8) — text analysis, inverted index, BM25
+          │
+          └───────────── all six components ───────────────┐
                                                            ▼
-                                           🏗️ Systems Platform  (Level 8)
+                                           🏗️ Systems Platform  (Level 9)
                                                            │
                                                            ▼
                                                     🚀 Final System
@@ -615,7 +671,7 @@ Each one introduces mechanisms that become useful in later projects.
 
 These arrows are conceptual. The code does not flow along them: each
 component reimplements what it needs, and the only package dependencies are
-the five components required by `php-systems-platform`.
+the six components required by `php-systems-platform`.
 
 The same concepts appear repeatedly in different contexts.
 
@@ -636,7 +692,9 @@ Event Loop
 
 Storage
  │
- └── Mini Database
+ ├── Mini Database
+ │
+ └── Mini Search (its append-only log)
 
 All of them
  │
@@ -772,7 +830,23 @@ Learn:
 
 ---
 
-## Level 8 — 🏗️ Final Platform
+## Level 8 — 🔎 Full-Text Search
+
+### [`php-mini-search`](https://github.com/Researcher86/php-mini-search)
+
+Learn:
+
+* text analysis and stemming
+* inverted indexes
+* BM25 ranking
+* derived data and its source of truth
+* ordering writes with versions and tombstones
+* reindexing
+* measuring before optimising
+
+---
+
+## Level 9 — 🏗️ Final Platform
 
 ### [`php-systems-platform`](https://github.com/Researcher86/php-systems-platform)
 
@@ -902,7 +976,7 @@ Typical tooling includes:
 * PHP-CS-Fixer
 * GitHub Actions
 
-Every Composer-based project (Levels 1 and 3–8) provides the same commands.
+Every Composer-based project (Levels 1 and 3–9) provides the same commands.
 They all run inside the project's Docker container:
 
 ```bash
@@ -1086,8 +1160,9 @@ integrated platform
 
 # 🚫 Out of Scope
 
-The lab is complete. The five Composer components are released as
-`v1.0.0`, and the platform is the only capstone.
+The lab is complete. The six Composer components have stable releases,
+`php-mini-search` joining last at `v1.0.0`, and the platform is the only
+capstone.
 
 It deliberately stops at one machine and one process tree. These topics are
 out of scope, not postponed:
@@ -1095,10 +1170,15 @@ out of scope, not postponed:
 * distributed systems: replication, consensus, sharding, distributed locks
 * service discovery, load balancing and orchestration
 * a production observability or tracing stack
-* more queues, caches, HTTP servers, databases or runtimes
+* another instance of a mechanism a level already teaches: one more queue, cache, HTTP server, database or runtime
 
-Each of these deserves a real system built for it, not a sixth subsystem
-here. The boundary is the one drawn in
+A new component earns its place only by teaching a mechanism no other level
+covers. `php-mini-search` was added for text analysis, the inverted index and
+ranking. It does have an HTTP server and a log of its own, but both are
+deliberately smaller than the levels that teach them.
+
+Each of the topics above deserves a real system built for it, not one more
+subsystem here. The boundary is the one drawn in
 [Production-Inspired, Not Production-Ready](#-production-inspired-not-production-ready):
 understand the mechanism, do not rebuild the product.
 
@@ -1132,6 +1212,9 @@ The entire lab can be reduced to one mental model:
                                        │
                                        ▼
                                   🗄️ DATABASE
+                                       │
+                                       ▼
+                                  🔎 SEARCH
                                        │
                                        ▼
                               🏗️ INTEGRATION
@@ -1212,6 +1295,8 @@ Storage becomes tangible.
 
 Databases become buildable.
 
+Text becomes searchable.
+
 And eventually:
 
 ```text
@@ -1232,6 +1317,9 @@ And eventually:
                                   │
                                   ▼
                            🗄️ Database
+                                  │
+                                  ▼
+                            🔎 Search
                                   │
                                   ▼
                          🏗️ Systems Platform
