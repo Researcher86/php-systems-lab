@@ -497,6 +497,7 @@ Integrated components:
 * job queue
 * cache
 * database
+* full-text search, as a separate service
 * background workers
 * IPC
 * event-driven networking
@@ -514,15 +515,15 @@ Integrated components:
               🏗️ Application
                  Runtime
                       │
-          ┌───────────┼───────────┐
-          │           │           │
-          ▼           ▼           ▼
-       💾 Cache     🗄️ DB      📬 Jobs
-          │           │           │
-          │           │           ▼
-          │           │      ⚙️ Workers
-          │           │           │
-          └───────────┼───────────┘
+      ┌───────────┬───┴───────┬───────────┐
+      │           │           │           │
+      ▼           ▼           ▼           ▼
+   💾 Cache     🗄️ DB       🔎 Search    📬 Jobs
+      │           │           ▲           │
+      │           │           │           ▼
+      │           │           └─────── ⚙️ Workers
+      │           │                       │
+      └───────────┴───┬───────────────────┘
                       │
                       ▼
                 🧠 System Runtime
@@ -536,6 +537,7 @@ Integrated components:
 * How should failures propagate?
 * How should backpressure move through the system?
 * How should shutdown work across multiple components?
+* How does a derived index stay in step with the data it is derived from?
 * How do storage, networking, workers, and queues form one platform?
 
 This is the final step of the lab:
